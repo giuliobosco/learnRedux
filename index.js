@@ -18,10 +18,13 @@ function modalClosed() {
     return { type: MODAL_CLOSED };
 }
 
+// AAPLICATION INITIAL STATE
 const initialState = {
     buttonClicked: 'no',
     modalClosed: 'no',
 };
+
+// ROOT REDUCER (MAIN FUNCTION)
 
 function rootReducer(state=initialState, action) {
     switch (action.type) {
@@ -36,9 +39,11 @@ function rootReducer(state=initialState, action) {
     }
 }
 
+// INITIALIZE APP
+
 const store = createStore(rootReducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
-// UI
+// UI FUNCIONS
 const button = document.getElementsByTagName('button')[0];
 button.addEventListener('click', (event) => store.dispatch(buttonClicked(event)));
 
