@@ -26,9 +26,10 @@ const initialState = {
 function rootReducer(state=initialState, action) {
     switch (action.type) {
         case BUTTON_CLICKED:
-            return Object.assign({}, initialState, {buttonClicked: 'yes'});
+            return Object.assign({}, initialState, {buttonClicked: 'yes'}); // object assign (old syntax)
         case MODAL_CLOSED:
             return Object.assign({}, initialState, {modalClosed: 'yes'});
+            //return { ...initialState, modalClosed: 'yes' }; // object spread (less compatible)
 
         default:
             return state;
