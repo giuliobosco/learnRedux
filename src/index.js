@@ -1,21 +1,5 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux';
+import { configureStore, getDefaultMiddleware, createSlice } from '@reduxjs/toolkit';
 import getApi from './getApi';
-
-const FETCH_START = 'FETCH_START';
-const FETCH_SUCCESS = 'FETCH_SUCCESS';
-const FETCH_ERROR = 'FETC_ERROR';
-
-function fetchStart() {
-    return { type: FETCH_START };
-}
-
-function fetchSuccess(payload) {
-    return { type: FETCH_SUCCESS, payload };
-}
-
-function fetchError(payload) {
-    return { type: FETCH_ERROR, payload };
-}
 
 const linksState = {
     isFetching: '',
@@ -23,37 +7,44 @@ const linksState = {
     data: [],
 };
 
-function linksReducer(state=linksState, action) {
-    switch (action.type) {
-        case FETCH_START:
-            return {...state, isFetching: true}
-        case FETCH_SUCCESS:
-            return {...state, isFetching: false, data: state.data.concat(action.payload)};
-        case FETCH_ERROR:
-            return {...state, isFetching: false, error: action.payload};
-        default:
+const linksSlice = createSlice({
+    name: 'links',
+    reducers: {
+        fetchStart: state => {
+            state.isFetching = true;
             return state;
-    }
-}
+        },
+        fetchSuccess: (state, action) => {
+            state.data = action.payload;
+            state.isFetching = false;
+            return state;
+        },
+        fetchError: (state, action) => {
+            state.error = action.payload;
+            state.isFetching = false;
+            return state;
+        }
+    },
+    initialState: linksState
+})
 
-const rootReducer = combineReducers({
-    links: linksReducer,
-});
+const { fetchStart, fetchSuccess, fetchError } = linksSlice.actions;
+const linksReducer = linksSlice.reducer;
 
 function loggerMiddlewares(store) {
     return function (next) {
-        return function(action) {
+        return function (action) {
             console.log(action);
             return next(action);
         }
     }
 }
 
-function apiMiddleware({dispatch}) {
+function apiMiddleware({ dispatch }) {
     return function (next) {
-        return function(action) {
+        return function (action) {
             switch (action.type) {
-                case FETCH_START:
+                case fetchStart.toString():
                     getApi().then(json => {
                         dispatch(fetchSuccess(json));
                     }).catch(error => {
@@ -65,9 +56,14 @@ function apiMiddleware({dispatch}) {
     }
 }
 
-const middlewares = [loggerMiddlewares, apiMiddleware];
+const middleware = [loggerMiddlewares, apiMiddleware];
 
-const store = createStore(rootReducer, applyMiddleware(...middlewares));
+const store = configureStore({
+    reducer: {
+        links: linksReducer
+    },
+    middleware: [...getDefaultMiddleware(), ...middleware]
+});
 
 const button = document.getElementById('fetch-btn');
 button.addEventListener('click', () => {
