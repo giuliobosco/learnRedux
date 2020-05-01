@@ -24,28 +24,18 @@ const initialState = {
 };
 
 function rootReducer(state=initialState, action) {
-   /* if (action.type === BUTTON_CLICKED) {
-        //change the state
-    }
-    if (action.type === MODAL_CLOSED) {
-       // change state for modal closed 
-    }
-    return state;
-    */
     switch (action.type) {
         case BUTTON_CLICKED:
-            state.buttonClicked = "yes"; // TODO fix me, no correct redux use
-            return state;
+            return Object.assign({}, initialState, {buttonClicked: 'yes'});
         case MODAL_CLOSED:
-            state.modalClosed = "yes"; // TODO fix me, no correct redux use
-            return state;
+            return Object.assign({}, initialState, {modalClosed: 'yes'});
 
         default:
             return state;
     }
 }
 
-const store = createStore(rootReducer);
+const store = createStore(rootReducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
 // UI
 const button = document.getElementsByTagName('button')[0];
