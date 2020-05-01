@@ -1,66 +1,90 @@
-import { createStore } from "https://unpkg.com/redux@4.0.5/es/redux.mjs";
+import { createStore, applyMiddleware } from "https://unpkg.com/redux@4.0.5/es/redux.mjs";
 // import { createStore } from 'redux';
 
 // NAMED CONSTANTS
+const FORM_SENT = 'FORM_SENT';
+const BAD_WORD = 'BAD_WORD';
 
-const BUTTON_CLICKED = 'BUTTON_CLICKED';
-const MODAL_CLOSED = 'MODAL_CLOSED';
 
 // ACTION CREATORS
-function buttonClicked(payload) {
+// payload is stirng inserted in the form
+function formSent(payload) {
     return {
-        type: BUTTON_CLICKED,
+        type: FORM_SENT,
         payload,
     }
 }
 
-function modalClosed() {
-    return { type: MODAL_CLOSED };
+function badWord() {
+    return { type: BAD_WORD };
 }
 
 // AAPLICATION INITIAL STATE
 const initialState = {
-    buttonClicked: 'no',
-    modalClosed: 'no',
+    formSent: 'no',
+    badWord: 'no',
 };
 
 // ROOT REDUCER (MAIN FUNCTION)
 
 function rootReducer(state=initialState, action) {
     switch (action.type) {
-        case BUTTON_CLICKED:
-            return Object.assign({}, initialState, {buttonClicked: 'yes'}); // object assign (old syntax)
-        case MODAL_CLOSED:
-            return Object.assign({}, initialState, {modalClosed: 'yes'});
-            //return { ...initialState, modalClosed: 'yes' }; // object spread (less compatible)
+        case FORM_SENT:
+            return { ...initialState, formSent: 'yes' };
 
+        case BAD_WORD:
+            return { ...initialState, badWord: 'yes' };
         default:
             return state;
     }
 }
 
+// MIDDLEWARE
+
+//function noNMiddleware(store) {
+function noNMiddleware({getState, dispatch}) {
+    return (next) => {
+        return (action) => {
+            if (action.type === FORM_SENT && action.payload.includes('n')) {
+                dispatch(badWord())
+            } 
+            return next(action);
+        }
+    }
+}
+
+function loggerMiddleware() {
+    return (next) => {
+        return (action) => {
+            console.log(action);
+            return next(action);
+        }
+    }
+}
+
 // INITIALIZE APP
 
-const store = createStore(rootReducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+const store = createStore(
+    rootReducer, 
+    applyMiddleware(noNMiddleware, loggerMiddleware)
+);
 
 // UI FUNCIONS
-const button = document.getElementsByTagName('button')[0];
-button.addEventListener('click', (event) => store.dispatch(buttonClicked(event)));
 
-const buttonModal = document.getElementById('buttonModal');
-buttonModal.addEventListener('click', () => store.dispatch(modalClosed()));
+const form = document.forms[0];
+form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    
+    const data = new FormData(this);
+    const payload = data.get("word");
 
-store.subscribe(() => {
-    if (store.getState().buttonClicked === 'yes') {
-        const div = document.getElementById('myDiv');
-        div.style.display = "block";
-    }
-});
+    store.dispatch(formSent(payload));
+})
 
 store.subscribe(() => {
-    if (store.getState().modalClosed === 'yes') {
-        const div = document.getElementById('myDiv');
-        div.style.display = 'none';
+    if (store.getState().badWord === 'yes') {
+        const h3 = document.createElement('h3');
+        document.body.appendChild(h3);
+        h3.innerText = 'Your word has a letter N! Forbidden'; // Wrong system (sanitation)
     }
-});
-
+})
