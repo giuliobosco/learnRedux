@@ -1,5 +1,5 @@
 export default function getApi() {
-    return fetch('https://api.valentinog.com/api/link').then(response => {
+    return fetch('https://giuliobosco.github.io/mock/link.json').then(response => {
         if (!response.ok) {
             throw Error(response.statusText)
         }
