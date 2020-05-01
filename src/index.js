@@ -1,41 +1,43 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
+import getApi from './getApi';
 
-const FETCH_ARTICLES = 'FETCH_ARTICLES';
+const FETCH_START = 'FETCH_START';
+const FETCH_SUCCESS = 'FETCH_SUCCESS';
+const FETCH_ERROR = 'FETC_ERROR';
 
-function fetchArticles() {
-    return function(dispatch) {
-        return fetch("https://academy.valentinog.com/api/link").then(response => {
-            dispatch({type: 'IS_FETCHING'});
-            if (!response.ok) {
-                //
-            }
-            return response.json();
-        }).then(json => {
-            dispatch({type: 'HAS_FETCHED', payload: json});
-        });
-    }
+function fetchStart() {
+    return { type: FETCH_START };
 }
 
-const articlesState = {
+function fetchSuccess(payload) {
+    return { type: FETCH_SUCCESS, payload };
+}
+
+function fetchError(payload) {
+    return { type: FETCH_ERROR, payload };
+}
+
+const linksState = {
     isFetching: '',
     error: '',
     data: [],
 };
 
-function articlesReducer(state=articlesState, action) {
+function linksReducer(state=linksState, action) {
     switch (action.type) {
-        case 'IS_FETCHING':
-            return state;
-        case 'HAS_FETCHED':
-            return {...state, isFetching: 'no', data: state.data.concat(action.payload)};
+        case FETCH_START:
+            return {...state, isFetching: true}
+        case FETCH_SUCCESS:
+            return {...state, isFetching: false, data: state.data.concat(action.payload)};
+        case FETCH_ERROR:
+            return {...state, isFetching: false, error: action.payload};
         default:
             return state;
     }
 }
 
 const rootReducer = combineReducers({
-    articles: articlesReducer,
+    links: linksReducer,
 });
 
 function loggerMiddlewares(store) {
@@ -47,13 +49,29 @@ function loggerMiddlewares(store) {
     }
 }
 
-const middlewares = [loggerMiddlewares, thunk];
+function apiMiddleware({dispatch}) {
+    return function (next) {
+        return function(action) {
+            switch (action.type) {
+                case FETCH_START:
+                    getApi().then(json => {
+                        dispatch(fetchSuccess(json));
+                    }).catch(error => {
+                        dispatch(fetchError(error))
+                    })
+            }
+            return next(action);
+        }
+    }
+}
+
+const middlewares = [loggerMiddlewares, apiMiddleware];
 
 const store = createStore(rootReducer, applyMiddleware(...middlewares));
 
 const button = document.getElementById('fetch-btn');
 button.addEventListener('click', () => {
-    store.dispatch(fetchArticles());
+    store.dispatch(fetchStart());
 })
 
 store.subscribe(() => {
