@@ -20,3 +20,17 @@ npm start
 
 Click the button in the view (or wait 2000 milliseconds) and open the browser inspector with the console. It will show the fetched data.
 
+## Testing
+
+Testing with JEST.
+
+```
+git clone git@github.com:giuliobosco/learnRedux.git
+cd learnRedux
+npm i
+
+npm test
+# or
+npm run test:watch
+```
+
