@@ -34,5 +34,5 @@ npm test
 npm run test:watch
 ```
 
-Test should be automatically executed on PR to master.
+Test should be automatically executed on PR to master. 
 
