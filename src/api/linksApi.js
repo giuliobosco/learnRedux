@@ -1,4 +1,4 @@
-export default function getApi() {
+export function linksGetApi() {
     return fetch('https://giuliobosco.github.io/mock/link.json').then(response => {
         if (!response.ok) {
             throw Error(response.statusText)

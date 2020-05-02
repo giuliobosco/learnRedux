@@ -9,3 +9,7 @@ button.addEventListener('click', () => {
 store.subscribe(() => {
     console.log('state:', store.getState());
 })
+
+setTimeout(() => {
+    store.dispatch(linksFetchStart())
+}, 2000)
